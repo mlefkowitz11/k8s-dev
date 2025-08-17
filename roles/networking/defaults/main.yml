@@ -1,0 +1,31 @@
+---
+# Do NOT touch management NIC by default
+manage_mgmt_nic: false
+mgmt_iface: enp1s0
+
+# Interfaces for control-plane and storage
+cp_iface: enp2s0
+storage_iface: enp3s0
+
+# Optional reference values (not enforced on mgmt since manage_mgmt_nic=false)
+default_gateway: 10.11.2.254
+dns_servers:
+  - 172.16.11.1
+  - 172.16.11.2
+  - 8.8.4.4
+
+# Netmask fallback map when ipaddr filter is unavailable
+cidr_netmasks:
+  8: 255.0.0.0
+  12: 255.240.0.0
+  16: 255.255.0.0
+  20: 255.255.240.0
+  22: 255.255.252.0
+  23: 255.255.254.0
+  24: 255.255.255.0
+  25: 255.255.255.128
+  26: 255.255.255.192
+  27: 255.255.255.224
+  28: 255.255.255.240
+  29: 255.255.255.248
+  30: 255.255.255.252

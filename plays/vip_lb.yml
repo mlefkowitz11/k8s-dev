@@ -1,0 +1,24 @@
+---
+- name: Configure VIP load balancer (keepalived + HAProxy) on control planes
+  hosts: all
+  gather_facts: false
+  any_errors_fatal: true
+  vars:
+    _cp_name_patterns:
+      - '^k8s-cp[0-9]+$'
+  tasks:
+    - name: Determine if this host is a control-plane
+      ansible.builtin.set_fact:
+        _is_cp: >-
+          {{
+            (inventory_hostname is search(_cp_name_patterns[0]))
+            or ('control_plane' in group_names)
+            or ('kube_control_plane' in group_names)
+            or ('masters' in group_names)
+            or ('cp' in group_names)
+          }}
+
+    - name: Include vip_lb only on control-plane nodes
+      ansible.builtin.include_role:
+        name: vip_lb
+      when: _is_cp | bool

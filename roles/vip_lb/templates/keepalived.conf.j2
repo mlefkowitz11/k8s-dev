@@ -1,0 +1,16 @@
+! Managed by Ansible
+vrrp_instance VI_1 {
+  state BACKUP
+  interface {{ vip_interface }}
+  virtual_router_id 51
+  priority {{ vrrp_priority }}
+  advert_int 1
+  garp_master_delay 1
+  authentication {
+    auth_type PASS
+    auth_pass k8svpsecret
+  }
+  virtual_ipaddress {
+    {{ vip_address }}/{{ vip_cidr }}
+  }
+}

@@ -1,0 +1,20 @@
+# Cluster-wide parameters
+lb_vip: 10.11.2.200
+lb_interface: enp1s0      # interface that carries the VIP
+vrid: 51                # VRRP ID (1-255)
+haproxy_stats_port: 8404
+
+pod_cidr: 10.244.0.0/16
+svc_cidr: 10.96.0.0/12
+
+# Kubernetes version controls repo segment and packages
+kubernetes_version: "1.30.4"
+kubernetes_deb_suffix: "-1.1"
+
+# Use ipvs for kube-proxy
+ipvs_enabled: true
+
+# NTP servers for chrony
+ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org

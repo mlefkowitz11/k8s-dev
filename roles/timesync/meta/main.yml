@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  role_name: timesync
+  description: Configure time sync via chrony
+  platforms:
+    - name: Debian
+      versions: [ bookworm ]
+  license: MIT
+dependencies: []

@@ -1,0 +1,13 @@
+---
+# Handlers for networking role
+# Triggered via: notify: reload interface (cp) / reload interface (storage)
+
+- name: "reload interface (cp)"
+  vars:
+    _iface_to_reload: "{{ cp_iface }}"
+  ansible.builtin.include_tasks: _reload_iface.yml
+
+- name: "reload interface (storage)"
+  vars:
+    _iface_to_reload: "{{ storage_iface }}"
+  ansible.builtin.include_tasks: _reload_iface.yml

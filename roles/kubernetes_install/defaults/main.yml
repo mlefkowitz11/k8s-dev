@@ -1,0 +1,7 @@
+---
+# Full version string as published by pkgs.k8s.io, e.g. "1.29" channel + latest.
+# You can override to pin, e.g.: 1.29.6-1.1
+kubernetes_version: "1.29"
+
+# Pod CIDR (used by kubeadm init), adjust if needed.
+pod_network_cidr: "10.244.0.0/16"

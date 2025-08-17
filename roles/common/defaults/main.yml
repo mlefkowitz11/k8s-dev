@@ -1,0 +1,14 @@
+---
+base_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - software-properties-common
+  - iproute2
+  - net-tools
+  - bash-completion
+
+kube_proxy_mode: "iptables"   # set to "ipvs" to install IPVS tools
+load_ipvs: "{{ kube_proxy_mode == 'ipvs' }}"

@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  role_name: containerd
+  description: Install and configure containerd (systemd cgroup)
+  platforms:
+    - name: Debian
+      versions: [ bookworm ]
+  license: MIT
+dependencies: []

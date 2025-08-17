@@ -1,0 +1,6 @@
+---
+vip_interface: "enp2s0"       # control-plane NIC
+vip_address: "10.4.20.200"
+vip_cidr: 24
+control_plane_group: "control_plane"
+haproxy_bind: "0.0.0.0:6443"

@@ -1,0 +1,8 @@
+# Managed by Ansible
+driftfile /var/lib/chrony/chrony.drift
+rtcsync
+{% for s in timesync_servers %}
+server {{ s }} iburst
+{% endfor %}
+makestep 1.0 3
+logdir /var/log/chrony

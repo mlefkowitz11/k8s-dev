@@ -1,0 +1,80 @@
+---
+- name: Build expected networking vars for this host
+  ansible.builtin.set_fact:
+    net_expected: "{{ networking_host_map[inventory_hostname] | default({}) }}"
+
+- name: Validate cp/storage config present
+  ansible.builtin.assert:
+    that:
+      - net_expected.cp is defined
+      - net_expected.cp.ip is defined
+      - net_expected.cp.cidr is defined
+      - net_expected.storage is defined
+      - net_expected.storage.ip is defined
+      - net_expected.storage.cidr is defined
+    fail_msg: "networking_host_map for {{ inventory_hostname }} must define: cp.ip, cp.cidr, storage.ip, storage.cidr. Current: {{ net_expected | to_nice_json }}"
+
+- name: Compute desired addresses
+  ansible.builtin.set_fact:
+    cp_addr: "{{ net_expected.cp.ip }}/{{ net_expected.cp.cidr }}"
+    storage_addr: "{{ net_expected.storage.ip }}/{{ net_expected.storage.cidr }}"
+    cp_netmask: "{{ (cidr_netmasks[net_expected.cp.cidr | int]) | default('255.255.255.0') }}"
+    storage_netmask: "{{ (cidr_netmasks[net_expected.storage.cidr | int]) | default('255.255.255.0') }}"
+
+- name: Ensure live IP on control-plane iface
+  ansible.builtin.shell: |
+    set -e
+    if ip -o -4 addr show dev {{ cp_iface }} | grep -qw '{{ cp_addr }}'; then
+      exit 0
+    fi
+    ip address add {{ cp_addr }} dev {{ cp_iface }}
+  args:
+    executable: /bin/bash
+  register: cp_live
+  changed_when: cp_live.rc == 0 and (cp_live.stdout is not defined or cp_live.stdout == '')
+  failed_when: false
+
+- name: Ensure live IP on storage iface
+  ansible.builtin.shell: |
+    set -e
+    if ip -o -4 addr show dev {{ storage_iface }} | grep -qw '{{ storage_addr }}'; then
+      exit 0
+    fi
+    ip address add {{ storage_addr }} dev {{ storage_iface }}
+  args:
+    executable: /bin/bash
+  register: stor_live
+  changed_when: stor_live.rc == 0 and (stor_live.stdout is not defined or stor_live.stdout == '')
+  failed_when: false
+
+- name: Persist control-plane iface config
+  ansible.builtin.copy:
+    dest: "/etc/network/interfaces.d/{{ cp_iface }}.cfg"
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      auto {{ cp_iface }}
+      allow-hotplug {{ cp_iface }}
+      iface {{ cp_iface }} inet static
+        address {{ net_expected.cp.ip }}
+        netmask {{ cp_netmask }}
+  notify: reload interface (cp)
+
+- name: Persist storage iface config
+  ansible.builtin.copy:
+    dest: "/etc/network/interfaces.d/{{ storage_iface }}.cfg"
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      auto {{ storage_iface }}
+      allow-hotplug {{ storage_iface }}
+      iface {{ storage_iface }} inet static
+        address {{ net_expected.storage.ip }}
+        netmask {{ storage_netmask }}
+  notify: reload interface (storage)
+
+- name: Note about management NIC left untouched
+  ansible.builtin.debug:
+    msg: "Management NIC {{ mgmt_iface }} left untouched (manage_mgmt_nic={{ manage_mgmt_nic }})"

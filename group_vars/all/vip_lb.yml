@@ -1,0 +1,15 @@
+# Control-plane VIP (on cp network)
+vip_interface: "{{ cp_iface }}"     # e.g., enp2s0
+vip_address: 10.4.20.200
+vip_cidr: 24
+
+# Optional management VIP (if your vip_lb role supports it)
+mgmt_vip_enabled: true
+mgmt_vip_interface: "{{ mgmt_iface | default('enp1s0') }}"
+mgmt_vip_address: 10.11.2.200
+mgmt_vip_cidr: 24
+
+# If your workers expose the dashboard on 30443 (recommended), leave as-is.
+dashboard_nodeport_https: 30443
+dashboard_nodeport_http: 30080
+

@@ -1,0 +1,48 @@
+---
+- name: Install keepalived and haproxy
+  ansible.builtin.apt:
+    name:
+      - keepalived
+      - haproxy
+    state: present
+    update_cache: true
+
+- name: Build list of CP backends
+  ansible.builtin.set_fact:
+    cp_backends: []
+
+- name: Append backends from group
+  ansible.builtin.set_fact:
+    cp_backends: "{{ cp_backends + [ (hostvars[item].net_expected.cp.ip | default(hostvars[item].cp_ip | default(hostvars[item].control_plane_ip | default(hostvars[item].ansible_host))) ) ] }}"
+  loop: "{{ groups[control_plane_group] | default([]) }}"
+
+- name: Compute VRRP priority (stable hash by inventory name)
+  ansible.builtin.set_fact:
+    vrrp_priority: "{{ (inventory_hostname | hash('sha1') | int(base=16) % 50) + 100 }}"
+
+- name: Render keepalived.conf
+  ansible.builtin.template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart keepalived
+
+- name: Render haproxy.cfg
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart haproxy
+
+- name: Enable & start services
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - haproxy
+    - keepalived

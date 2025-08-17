@@ -1,0 +1,38 @@
+---
+# Helper tasks to (best-effort) reload an interface without reboot.
+# Expects var: _iface_to_reload
+
+- name: "Try ifreload for {{ _iface_to_reload }}"
+  become: true
+  ansible.builtin.command: "ifreload -i {{ _iface_to_reload }}"
+  register: ifreload_result
+  changed_when: true
+  failed_when: false
+
+- name: "Fallback to ifdown/ifup for {{ _iface_to_reload }}"
+  become: true
+  ansible.builtin.shell: |
+    set -e
+    if command -v ifdown >/dev/null 2>&1 && command -v ifup >/dev/null 2>&1; then
+      # ifdown may fail if iface isn't configured yet; that's fine
+      ifdown {{ _iface_to_reload }} || true
+      ifup {{ _iface_to_reload }}
+    else
+      exit 99
+    fi
+  register: ifupdown_result
+  changed_when: true
+  failed_when: false
+  when: (ifreload_result.rc | default(0)) != 0
+
+- name: "Last resort: toggle link {{ _iface_to_reload }}"
+  become: true
+  ansible.builtin.shell: |
+    set -e
+    ip link set {{ _iface_to_reload }} down || true
+    sleep 1
+    ip link set {{ _iface_to_reload }} up
+  register: iptoggle_result
+  changed_when: true
+  failed_when: false
+  when: ((ifreload_result.rc | default(1)) != 0) and ((ifupdown_result.rc | default(99)) != 0)

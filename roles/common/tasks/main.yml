@@ -1,0 +1,77 @@
+---
+- name: Ensure base packages
+  ansible.builtin.apt:
+    name: "{{ base_packages }}"
+    update_cache: true
+    state: present
+
+# Swap is often already disabled on servers; keep non-disruptive and idempotent.
+- name: Disable swap (runtime)
+  ansible.builtin.command: swapoff -a
+  changed_when: false
+  failed_when: false
+
+- name: Remove swap from fstab
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^\s*([^#].*\s+swap\s+.*)$'
+    replace: '# \1'
+  register: removed_swap
+  notify: Apply sysctl
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Enable br_netfilter and overlay at boot
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/k8s.conf
+    content: |
+      overlay
+      br_netfilter
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Load kernel modules immediately
+  ansible.builtin.shell: |
+    set -euo pipefail
+    for m in br_netfilter overlay; do
+      /sbin/lsmod | awk '{print $1}' | grep -qx "$m" || /sbin/modprobe "$m"
+    done
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Set Kubernetes sysctl params
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/99-kubernetes.conf
+    content: |
+      net.bridge.bridge-nf-call-iptables = 1
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.ipv4.ip_forward = 1
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Apply sysctl
+
+- name: Install IPVS tools when kube-proxy IPVS mode is enabled
+  ansible.builtin.apt:
+    name:
+      - ipset
+      - ipvsadm
+    state: present
+    update_cache: true
+  when: load_ipvs
+
+- name: Ensure IPVS modules are loaded at boot (only if enabled)
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/k8s-ipvs.conf
+    content: |
+      ip_vs
+      ip_vs_rr
+      ip_vs_wrr
+      ip_vs_sh
+      nf_conntrack
+    owner: root
+    group: root
+    mode: '0644'
+  when: load_ipvs
+  notify: Apply sysctl

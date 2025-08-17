@@ -1,0 +1,30 @@
+# 0) Base prep on all nodes
+- name: Base prep (common, time sync, firewall)
+  hosts: all
+  become: true
+  roles:
+    - common
+    - timesync
+    - firewall
+
+# 1) Configure networking (ONLY control-plane & storage NICs)
+- name: Networking (cp/storage only; mgmt left untouched)
+  hosts: all
+  become: true
+  roles:
+    - networking
+
+# 2) VIP + HAProxy on control-plane nodes
+- name: VIP & HAProxy (keepalived + haproxy)
+  hosts: control_planes
+  become: true
+  roles:
+    - vip_lb
+
+# 3) Container runtime and Kubernetes packages
+- name: Containerd & Kubernetes packages
+  hosts: all
+  become: true
+  roles:
+    - containerd
+    - kubernetes_install

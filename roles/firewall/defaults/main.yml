@@ -1,0 +1,18 @@
+---
+# Defaults for firewall role
+
+# CIDRs
+mgmt_cidr: "10.11.2.0/24"
+cp_cidr: "10.4.20.0/24"
+
+# Control plane ports
+kube_apiserver_port: 6443
+etcd_client_ports: "2379-2380"
+overlay_udp_port: 4789
+
+# Worker NodePorts (example)
+nodeport_http: 30080
+nodeport_https: 30443
+
+# Feature flag
+firewall_manage: true

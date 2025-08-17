@@ -1,0 +1,23 @@
+# Managed by Ansible
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    daemon
+    maxconn 4096
+
+defaults
+    log     global
+    mode    tcp
+    option  dontlognull
+    timeout connect 10s
+    timeout client  1m
+    timeout server  1m
+
+frontend k8s_api_frontend
+    bind {{ haproxy_bind }}
+    default_backend k8s_api_backend
+
+backend k8s_api_backend
+{% for ip in cp_backends %}
+    server cp{{ loop.index }} {{ ip }}:6443 check
+{% endfor %}

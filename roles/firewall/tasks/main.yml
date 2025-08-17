@@ -1,0 +1,116 @@
+---
+# Firewall role tasks (Debian-friendly). Handles firewalld or ufw if present.
+# Avoids YAML pitfalls and quotes colons properly.
+
+- name: Determine node role flags
+  ansible.builtin.set_fact:
+    is_cp: "{{ inventory_hostname in (groups.get('control_plane', [])) }}"
+    is_worker: "{{ inventory_hostname in (groups.get('workers', [])) }}"
+  tags: firewall
+
+- name: Detect firewalld binary
+  ansible.builtin.stat:
+    path: /usr/bin/firewall-cmd
+  register: firewalld_bin
+  tags: firewall
+
+- name: Check firewalld state
+  ansible.builtin.command: firewall-cmd --state
+  register: firewalld_state
+  changed_when: false
+  failed_when: false
+  when: firewalld_bin.stat.exists
+  tags: firewall
+
+- name: Set fact firewalld_active
+  ansible.builtin.set_fact:
+    firewalld_active: "{{ firewalld_bin.stat.exists and (firewalld_state.stdout | default('')) == 'running' }}"
+  tags: firewall
+
+- name: Detect ufw binary
+  ansible.builtin.stat:
+    path: /usr/sbin/ufw
+  register: ufw_bin
+  tags: firewall
+
+- name: Check ufw status
+  ansible.builtin.command: ufw status
+  register: ufw_status
+  changed_when: false
+  failed_when: false
+  when: ufw_bin.stat.exists
+  tags: firewall
+
+- name: Set fact ufw_active
+  ansible.builtin.set_fact:
+    ufw_active: "{{ ufw_bin.stat.exists and ('Status: active' in (ufw_status.stdout | default(''))) }}"
+  tags: firewall
+
+# -------------------------- firewalld --------------------------
+- name: Open control-plane ports via firewalld rich rules
+  ansible.builtin.command: >
+    firewall-cmd --permanent --add-rich-rule='rule family=ipv4 source address={{ item.cidr }} port protocol=tcp port={{ item.port }} accept'
+  loop:
+    - { cidr: "{{ cp_cidr }}", port: "{{ kube_apiserver_port }}" }
+  when: firewall_manage and firewalld_active and is_cp
+  register: firewalld_rule_apiserver
+  tags: firewall
+
+- name: Open etcd ports via firewalld
+  ansible.builtin.command: >
+    firewall-cmd --permanent --add-rich-rule='rule family=ipv4 source address={{ cp_cidr }} port protocol=tcp port={{ etcd_client_ports }} accept'
+  when: firewall_manage and firewalld_active and is_cp
+  register: firewalld_rule_etcd
+  tags: firewall
+
+- name: Open overlay UDP via firewalld
+  ansible.builtin.command: >
+    firewall-cmd --permanent --add-rich-rule='rule family=ipv4 source address={{ cp_cidr }} udp dport={{ overlay_udp_port }} accept'
+  when: firewall_manage and firewalld_active and (is_cp or is_worker)
+  register: firewalld_rule_overlay
+  tags: firewall
+
+- name: Open worker NodePorts via firewalld
+  ansible.builtin.command: >
+    firewall-cmd --permanent --add-rich-rule='rule family=ipv4 source address={{ mgmt_cidr }} port protocol=tcp port={{ item }} accept'
+  loop:
+    - "{{ nodeport_http }}"
+    - "{{ nodeport_https }}"
+  when: firewall_manage and firewalld_active and (is_worker or is_cp)
+  register: firewalld_rule_nodeports
+  tags: firewall
+
+- name: Reload firewalld if active
+  ansible.builtin.command: firewall-cmd --reload
+  when: firewalld_active
+  changed_when: true
+  tags: firewall
+
+# --------------------------- UFW ------------------------------
+- name: UFW allow control-plane rules
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - "ufw allow from {{ mgmt_cidr }} to any port {{ kube_apiserver_port }} proto tcp"
+    - "ufw allow from {{ cp_cidr }} to any port {{ kube_apiserver_port }} proto tcp"
+    - "ufw allow from {{ cp_cidr }} to any port 2379:2380 proto tcp"
+    - "ufw allow from {{ cp_cidr }} to any port {{ overlay_udp_port }} proto udp"
+  when: firewall_manage and ufw_active and is_cp
+  register: ufw_rule_cp
+  tags: firewall
+
+- name: UFW allow worker rules
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - "ufw allow from {{ mgmt_cidr }} to any port {{ nodeport_http }} proto tcp"
+    - "ufw allow from {{ mgmt_cidr }} to any port {{ nodeport_https }} proto tcp"
+    - "ufw allow from {{ cp_cidr }} to any port 10250 proto tcp"
+    - "ufw allow from {{ cp_cidr }} to any port {{ overlay_udp_port }} proto udp"
+  when: firewall_manage and ufw_active and (is_worker or is_cp)
+  register: ufw_rule_worker
+  tags: firewall
+
+- name: Status when firewalld/ufw not active
+  ansible.builtin.debug:
+    msg: "firewalld/ufw not active on this host — firewall role skipped."
+  when: not firewalld_active and not ufw_active
+  tags: firewall

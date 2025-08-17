@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  role_name: vip_lb
+  description: Keepalived + HAProxy VIP for Kubernetes API
+  platforms:
+    - name: Debian
+      versions: [ bookworm ]
+  license: MIT
+dependencies: []

@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  role_name: firewall
+  description: Minimal firewall openings for Kubernetes
+  platforms:
+    - name: Debian
+      versions: [ bookworm ]
+  license: MIT
+dependencies: []

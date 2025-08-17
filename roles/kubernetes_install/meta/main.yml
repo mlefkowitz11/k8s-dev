@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  role_name: kubernetes_install
+  description: Install Kubernetes packages via pkgs.k8s.io
+  platforms:
+    - name: Debian
+      versions: [ bookworm ]
+  license: MIT
+dependencies: [ containerd ]

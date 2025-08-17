@@ -1,0 +1,9 @@
+# Interfaces
+mgmt_iface: enp1s0
+cp_iface: enp2s0
+storage_iface: enp3s0
+
+# Static IPs
+mgmt_ip: 10.11.2.202/24
+cp_ip: 10.4.20.202/24
+storage_ip: 10.11.9.222/24

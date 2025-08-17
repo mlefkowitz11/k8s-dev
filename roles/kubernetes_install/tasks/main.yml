@@ -1,0 +1,48 @@
+---
+# Compute "major.minor" for the pkgs.k8s.io stable channel
+- name: Compute K8s major.minor
+  ansible.builtin.set_fact:
+    k8s_mm: "{{ kubernetes_version | regex_search('^([0-9]+\\.[0-9]+)') }}"
+
+- name: Ensure APT keyring directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Add Kubernetes apt key (pkgs.k8s.io)
+  ansible.builtin.get_url:
+    url: "https://pkgs.k8s.io/core:/stable:/v{{ k8s_mm }}/deb/Release.key"
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+    mode: '0644'
+
+- name: Add Kubernetes apt repository
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/kubernetes.list
+    content: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/v{{ k8s_mm }}/deb/ /"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install Kubernetes packages
+  ansible.builtin.apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    update_cache: true
+
+- name: Hold Kubernetes packages
+  ansible.builtin.command: "apt-mark hold kubelet kubeadm kubectl"
+  changed_when: false
+
+- name: Configure kubelet to use systemd cgroup driver
+  ansible.builtin.copy:
+    dest: /etc/default/kubelet
+    content: |
+      KUBELET_EXTRA_ARGS=--cgroup-driver=systemd
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart kubelet

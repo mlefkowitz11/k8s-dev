@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  role_name: common
+  description: Base OS setup for Kubernetes (Debian 12)
+  platforms:
+    - name: Debian
+      versions: [ bookworm ]
+  license: MIT
+dependencies: []
