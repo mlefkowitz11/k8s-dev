@@ -1,0 +1,369 @@
+
+PLAY [Base prep (common, time sync, firewall)] *********************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [k8s-cp2]
+ok: [k8s-cp3]
+ok: [k8s-worker1]
+ok: [k8s-cp1]
+ok: [k8s-worker2]
+ok: [k8s-worker3]
+
+TASK [common : Ensure base packages] *******************************************
+changed: [k8s-cp3]
+changed: [k8s-worker1]
+changed: [k8s-worker2]
+changed: [k8s-cp2]
+changed: [k8s-cp1]
+changed: [k8s-worker3]
+
+TASK [common : Disable swap (runtime)] *****************************************
+ok: [k8s-worker1]
+ok: [k8s-worker2]
+ok: [k8s-cp2]
+ok: [k8s-cp1]
+ok: [k8s-cp3]
+ok: [k8s-worker3]
+
+TASK [common : Remove swap from fstab] *****************************************
+ok: [k8s-cp3]
+ok: [k8s-cp2]
+ok: [k8s-worker1]
+ok: [k8s-cp1]
+ok: [k8s-worker2]
+ok: [k8s-worker3]
+
+TASK [common : Enable br_netfilter and overlay at boot] ************************
+changed: [k8s-cp2]
+changed: [k8s-worker1]
+changed: [k8s-worker2]
+changed: [k8s-cp1]
+changed: [k8s-cp3]
+changed: [k8s-worker3]
+
+TASK [common : Load kernel modules immediately] ********************************
+ok: [k8s-cp3]
+ok: [k8s-cp2]
+ok: [k8s-worker1]
+ok: [k8s-cp1]
+ok: [k8s-worker2]
+ok: [k8s-worker3]
+
+TASK [common : Set Kubernetes sysctl params] ***********************************
+changed: [k8s-cp1]
+changed: [k8s-cp2]
+changed: [k8s-cp3]
+changed: [k8s-worker1]
+changed: [k8s-worker2]
+changed: [k8s-worker3]
+
+TASK [common : Install IPVS tools when kube-proxy IPVS mode is enabled] ********
+skipping: [k8s-cp1]
+skipping: [k8s-cp2]
+skipping: [k8s-cp3]
+skipping: [k8s-worker1]
+skipping: [k8s-worker2]
+skipping: [k8s-worker3]
+
+TASK [common : Ensure IPVS modules are loaded at boot (only if enabled)] *******
+skipping: [k8s-cp1]
+skipping: [k8s-cp2]
+skipping: [k8s-cp3]
+skipping: [k8s-worker1]
+skipping: [k8s-worker2]
+skipping: [k8s-worker3]
+
+TASK [timesync : Install chrony] ***********************************************
+changed: [k8s-cp2]
+changed: [k8s-worker2]
+changed: [k8s-worker1]
+changed: [k8s-cp3]
+changed: [k8s-cp1]
+changed: [k8s-worker3]
+
+TASK [timesync : Write chrony.conf] ********************************************
+changed: [k8s-cp3]
+changed: [k8s-worker1]
+changed: [k8s-cp2]
+changed: [k8s-cp1]
+changed: [k8s-worker2]
+changed: [k8s-worker3]
+
+TASK [firewall : Determine node role flags] ************************************
+ok: [k8s-cp1]
+ok: [k8s-cp2]
+ok: [k8s-cp3]
+ok: [k8s-worker1]
+ok: [k8s-worker2]
+ok: [k8s-worker3]
+
+TASK [firewall : Detect firewalld binary] **************************************
+ok: [k8s-cp1]
+ok: [k8s-cp2]
+ok: [k8s-worker1]
+ok: [k8s-cp3]
+ok: [k8s-worker2]
+ok: [k8s-worker3]
+
+TASK [firewall : Check firewalld state] ****************************************
+skipping: [k8s-cp1]
+skipping: [k8s-cp2]
+skipping: [k8s-cp3]
+skipping: [k8s-worker1]
+skipping: [k8s-worker2]
+skipping: [k8s-worker3]
+
+TASK [firewall : Set fact firewalld_active] ************************************
+ok: [k8s-cp1]
+ok: [k8s-cp2]
+ok: [k8s-cp3]
+ok: [k8s-worker1]
+ok: [k8s-worker2]
+ok: [k8s-worker3]
+
+TASK [firewall : Detect ufw binary] ********************************************
+ok: [k8s-cp2]
+ok: [k8s-cp1]
+ok: [k8s-worker2]
+ok: [k8s-cp3]
+ok: [k8s-worker1]
+ok: [k8s-worker3]
+
+TASK [firewall : Check ufw status] *********************************************
+skipping: [k8s-cp1]
+skipping: [k8s-cp2]
+skipping: [k8s-cp3]
+skipping: [k8s-worker1]
+skipping: [k8s-worker2]
+skipping: [k8s-worker3]
+
+TASK [firewall : Set fact ufw_active] ******************************************
+ok: [k8s-cp1]
+ok: [k8s-cp2]
+ok: [k8s-cp3]
+ok: [k8s-worker1]
+ok: [k8s-worker2]
+ok: [k8s-worker3]
+
+TASK [firewall : Open control-plane ports via firewalld rich rules] ************
+skipping: [k8s-cp1] => (item={'cidr': '10.4.20.0/24', 'port': 6443}) 
+skipping: [k8s-cp2] => (item={'cidr': '10.4.20.0/24', 'port': 6443}) 
+skipping: [k8s-cp1]
+skipping: [k8s-cp2]
+skipping: [k8s-cp3] => (item={'cidr': '10.4.20.0/24', 'port': 6443}) 
+skipping: [k8s-worker1] => (item={'cidr': '10.4.20.0/24', 'port': 6443}) 
+skipping: [k8s-cp3]
+skipping: [k8s-worker2] => (item={'cidr': '10.4.20.0/24', 'port': 6443}) 
+skipping: [k8s-worker1]
+skipping: [k8s-worker2]
+skipping: [k8s-worker3] => (item={'cidr': '10.4.20.0/24', 'port': 6443}) 
+skipping: [k8s-worker3]
+
+TASK [firewall : Open etcd ports via firewalld] ********************************
+skipping: [k8s-cp1]
+skipping: [k8s-cp2]
+skipping: [k8s-cp3]
+skipping: [k8s-worker1]
+skipping: [k8s-worker2]
+skipping: [k8s-worker3]
+
+TASK [firewall : Open overlay UDP via firewalld] *******************************
+skipping: [k8s-cp1]
+skipping: [k8s-cp2]
+skipping: [k8s-cp3]
+skipping: [k8s-worker1]
+skipping: [k8s-worker2]
+skipping: [k8s-worker3]
+
+TASK [firewall : Open worker NodePorts via firewalld] **************************
+skipping: [k8s-cp1] => (item=30080) 
+skipping: [k8s-cp1] => (item=30443) 
+skipping: [k8s-cp2] => (item=30080) 
+skipping: [k8s-cp2] => (item=30443) 
+skipping: [k8s-cp1]
+skipping: [k8s-cp3] => (item=30080) 
+skipping: [k8s-cp2]
+skipping: [k8s-cp3] => (item=30443) 
+skipping: [k8s-worker1] => (item=30080) 
+skipping: [k8s-worker1] => (item=30443) 
+skipping: [k8s-cp3]
+skipping: [k8s-worker2] => (item=30080) 
+skipping: [k8s-worker2] => (item=30443) 
+skipping: [k8s-worker1]
+skipping: [k8s-worker2]
+skipping: [k8s-worker3] => (item=30080) 
+skipping: [k8s-worker3] => (item=30443) 
+skipping: [k8s-worker3]
+
+TASK [firewall : Reload firewalld if active] ***********************************
+skipping: [k8s-cp1]
+skipping: [k8s-cp2]
+skipping: [k8s-cp3]
+skipping: [k8s-worker1]
+skipping: [k8s-worker2]
+skipping: [k8s-worker3]
+
+TASK [firewall : UFW allow control-plane rules] ********************************
+skipping: [k8s-cp1] => (item=ufw allow from 10.11.2.0/24 to any port 6443 proto tcp) 
+skipping: [k8s-cp1] => (item=ufw allow from 10.4.20.0/24 to any port 6443 proto tcp) 
+skipping: [k8s-cp1] => (item=ufw allow from 10.4.20.0/24 to any port 2379:2380 proto tcp) 
+skipping: [k8s-cp1] => (item=ufw allow from 10.4.20.0/24 to any port 4789 proto udp) 
+skipping: [k8s-cp1]
+skipping: [k8s-cp2] => (item=ufw allow from 10.11.2.0/24 to any port 6443 proto tcp) 
+skipping: [k8s-cp2] => (item=ufw allow from 10.4.20.0/24 to any port 6443 proto tcp) 
+skipping: [k8s-cp2] => (item=ufw allow from 10.4.20.0/24 to any port 2379:2380 proto tcp) 
+skipping: [k8s-cp2] => (item=ufw allow from 10.4.20.0/24 to any port 4789 proto udp) 
+skipping: [k8s-cp2]
+skipping: [k8s-cp3] => (item=ufw allow from 10.11.2.0/24 to any port 6443 proto tcp) 
+skipping: [k8s-cp3] => (item=ufw allow from 10.4.20.0/24 to any port 6443 proto tcp) 
+skipping: [k8s-cp3] => (item=ufw allow from 10.4.20.0/24 to any port 2379:2380 proto tcp) 
+skipping: [k8s-cp3] => (item=ufw allow from 10.4.20.0/24 to any port 4789 proto udp) 
+skipping: [k8s-cp3]
+skipping: [k8s-worker1] => (item=ufw allow from 10.11.2.0/24 to any port 6443 proto tcp) 
+skipping: [k8s-worker1] => (item=ufw allow from 10.4.20.0/24 to any port 6443 proto tcp) 
+skipping: [k8s-worker1] => (item=ufw allow from 10.4.20.0/24 to any port 2379:2380 proto tcp) 
+skipping: [k8s-worker1] => (item=ufw allow from 10.4.20.0/24 to any port 4789 proto udp) 
+skipping: [k8s-worker1]
+skipping: [k8s-worker2] => (item=ufw allow from 10.11.2.0/24 to any port 6443 proto tcp) 
+skipping: [k8s-worker2] => (item=ufw allow from 10.4.20.0/24 to any port 6443 proto tcp) 
+skipping: [k8s-worker2] => (item=ufw allow from 10.4.20.0/24 to any port 2379:2380 proto tcp) 
+skipping: [k8s-worker2] => (item=ufw allow from 10.4.20.0/24 to any port 4789 proto udp) 
+skipping: [k8s-worker2]
+skipping: [k8s-worker3] => (item=ufw allow from 10.11.2.0/24 to any port 6443 proto tcp) 
+skipping: [k8s-worker3] => (item=ufw allow from 10.4.20.0/24 to any port 6443 proto tcp) 
+skipping: [k8s-worker3] => (item=ufw allow from 10.4.20.0/24 to any port 2379:2380 proto tcp) 
+skipping: [k8s-worker3] => (item=ufw allow from 10.4.20.0/24 to any port 4789 proto udp) 
+skipping: [k8s-worker3]
+
+TASK [firewall : UFW allow worker rules] ***************************************
+skipping: [k8s-cp1] => (item=ufw allow from 10.11.2.0/24 to any port 30080 proto tcp) 
+skipping: [k8s-cp1] => (item=ufw allow from 10.11.2.0/24 to any port 30443 proto tcp) 
+skipping: [k8s-cp1] => (item=ufw allow from 10.4.20.0/24 to any port 10250 proto tcp) 
+skipping: [k8s-cp1] => (item=ufw allow from 10.4.20.0/24 to any port 4789 proto udp) 
+skipping: [k8s-cp1]
+skipping: [k8s-cp2] => (item=ufw allow from 10.11.2.0/24 to any port 30080 proto tcp) 
+skipping: [k8s-cp2] => (item=ufw allow from 10.11.2.0/24 to any port 30443 proto tcp) 
+skipping: [k8s-cp2] => (item=ufw allow from 10.4.20.0/24 to any port 10250 proto tcp) 
+skipping: [k8s-cp2] => (item=ufw allow from 10.4.20.0/24 to any port 4789 proto udp) 
+skipping: [k8s-cp2]
+skipping: [k8s-cp3] => (item=ufw allow from 10.11.2.0/24 to any port 30080 proto tcp) 
+skipping: [k8s-cp3] => (item=ufw allow from 10.11.2.0/24 to any port 30443 proto tcp) 
+skipping: [k8s-cp3] => (item=ufw allow from 10.4.20.0/24 to any port 10250 proto tcp) 
+skipping: [k8s-cp3] => (item=ufw allow from 10.4.20.0/24 to any port 4789 proto udp) 
+skipping: [k8s-cp3]
+skipping: [k8s-worker1] => (item=ufw allow from 10.11.2.0/24 to any port 30080 proto tcp) 
+skipping: [k8s-worker1] => (item=ufw allow from 10.11.2.0/24 to any port 30443 proto tcp) 
+skipping: [k8s-worker1] => (item=ufw allow from 10.4.20.0/24 to any port 10250 proto tcp) 
+skipping: [k8s-worker1] => (item=ufw allow from 10.4.20.0/24 to any port 4789 proto udp) 
+skipping: [k8s-worker1]
+skipping: [k8s-worker2] => (item=ufw allow from 10.11.2.0/24 to any port 30080 proto tcp) 
+skipping: [k8s-worker2] => (item=ufw allow from 10.11.2.0/24 to any port 30443 proto tcp) 
+skipping: [k8s-worker2] => (item=ufw allow from 10.4.20.0/24 to any port 10250 proto tcp) 
+skipping: [k8s-worker2] => (item=ufw allow from 10.4.20.0/24 to any port 4789 proto udp) 
+skipping: [k8s-worker2]
+skipping: [k8s-worker3] => (item=ufw allow from 10.11.2.0/24 to any port 30080 proto tcp) 
+skipping: [k8s-worker3] => (item=ufw allow from 10.11.2.0/24 to any port 30443 proto tcp) 
+skipping: [k8s-worker3] => (item=ufw allow from 10.4.20.0/24 to any port 10250 proto tcp) 
+skipping: [k8s-worker3] => (item=ufw allow from 10.4.20.0/24 to any port 4789 proto udp) 
+skipping: [k8s-worker3]
+
+TASK [firewall : Status when firewalld/ufw not active] *************************
+ok: [k8s-cp1] => {
+    "msg": "firewalld/ufw not active on this host — firewall role skipped."
+}
+ok: [k8s-cp2] => {
+    "msg": "firewalld/ufw not active on this host — firewall role skipped."
+}
+ok: [k8s-cp3] => {
+    "msg": "firewalld/ufw not active on this host — firewall role skipped."
+}
+ok: [k8s-worker1] => {
+    "msg": "firewalld/ufw not active on this host — firewall role skipped."
+}
+ok: [k8s-worker2] => {
+    "msg": "firewalld/ufw not active on this host — firewall role skipped."
+}
+ok: [k8s-worker3] => {
+    "msg": "firewalld/ufw not active on this host — firewall role skipped."
+}
+
+RUNNING HANDLER [common : Apply sysctl] ****************************************
+ok: [k8s-cp2]
+ok: [k8s-cp1]
+ok: [k8s-cp3]
+ok: [k8s-worker1]
+ok: [k8s-worker2]
+ok: [k8s-worker3]
+
+RUNNING HANDLER [timesync : Restart chrony] ************************************
+changed: [k8s-worker1]
+changed: [k8s-cp2]
+changed: [k8s-cp3]
+changed: [k8s-cp1]
+changed: [k8s-worker2]
+changed: [k8s-worker3]
+
+PLAY [Networking (cp/storage only; mgmt left untouched)] ***********************
+
+TASK [Gathering Facts] *********************************************************
+ok: [k8s-cp3]
+ok: [k8s-worker1]
+ok: [k8s-cp2]
+ok: [k8s-cp1]
+ok: [k8s-worker2]
+ok: [k8s-worker3]
+
+TASK [networking : Build expected networking vars for this host] ***************
+ok: [k8s-cp1]
+ok: [k8s-cp2]
+ok: [k8s-cp3]
+ok: [k8s-worker3]
+ok: [k8s-worker2]
+ok: [k8s-worker1]
+
+TASK [networking : Validate cp/storage config present] *************************
+fatal: [k8s-cp1]: FAILED! => {
+    "assertion": "net_expected.cp is defined",
+    "changed": false,
+    "evaluated_to": false,
+    "msg": "networking_host_map for k8s-cp1 must define: cp.ip, cp.cidr, storage.ip, storage.cidr. Current: {}"
+}
+fatal: [k8s-cp2]: FAILED! => {
+    "assertion": "net_expected.cp is defined",
+    "changed": false,
+    "evaluated_to": false,
+    "msg": "networking_host_map for k8s-cp2 must define: cp.ip, cp.cidr, storage.ip, storage.cidr. Current: {}"
+}
+fatal: [k8s-cp3]: FAILED! => {
+    "assertion": "net_expected.cp is defined",
+    "changed": false,
+    "evaluated_to": false,
+    "msg": "networking_host_map for k8s-cp3 must define: cp.ip, cp.cidr, storage.ip, storage.cidr. Current: {}"
+}
+fatal: [k8s-worker1]: FAILED! => {
+    "assertion": "net_expected.cp is defined",
+    "changed": false,
+    "evaluated_to": false,
+    "msg": "networking_host_map for k8s-worker1 must define: cp.ip, cp.cidr, storage.ip, storage.cidr. Current: {}"
+}
+fatal: [k8s-worker2]: FAILED! => {
+    "assertion": "net_expected.cp is defined",
+    "changed": false,
+    "evaluated_to": false,
+    "msg": "networking_host_map for k8s-worker2 must define: cp.ip, cp.cidr, storage.ip, storage.cidr. Current: {}"
+}
+fatal: [k8s-worker3]: FAILED! => {
+    "assertion": "net_expected.cp is defined",
+    "changed": false,
+    "evaluated_to": false,
+    "msg": "networking_host_map for k8s-worker3 must define: cp.ip, cp.cidr, storage.ip, storage.cidr. Current: {}"
+}
+
+PLAY RECAP *********************************************************************
+k8s-cp1                    : ok=19   changed=6    unreachable=0    failed=1    skipped=11   rescued=0    ignored=0   
+k8s-cp2                    : ok=19   changed=6    unreachable=0    failed=1    skipped=11   rescued=0    ignored=0   
+k8s-cp3                    : ok=19   changed=6    unreachable=0    failed=1    skipped=11   rescued=0    ignored=0   
+k8s-worker1                : ok=19   changed=6    unreachable=0    failed=1    skipped=11   rescued=0    ignored=0   
+k8s-worker2                : ok=19   changed=6    unreachable=0    failed=1    skipped=11   rescued=0    ignored=0   
+k8s-worker3                : ok=19   changed=6    unreachable=0    failed=1    skipped=11   rescued=0    ignored=0   
+
